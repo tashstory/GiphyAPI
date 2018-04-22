@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>GIPHY</title>
+    <style type="text/css">
+        body {
+            text-align: center;
+            padding: 10px;
+        }
+
+        button {
+            margin: 5px;
+        }
+
+        div {
+            background-color: white;
+        }
+
+        form {
+            box-sizing: content-box;
+            position: relative;
+            float: left;
+            text-align: center;
+            margin-left: 34%;
+            margin-right: 30%;
+            width: 30%;
+            
+        }
+
+        input {
+
+            margin: 10px;
+            position: relative;
+        }
+
+        #gif-view {
+
+            margin-left: 30px;
+            margin-top: 15px;
+
+
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        .gif {
+            font-size: 15px;
+            float: left;
+        }
+        .rating {
+            float: left;
+            width: 25px;
+            background-color: white;
+            height: 25px;
+            margin-left: -28px;
+            margin-top: 3px;
+            
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="gif-view"></div>
+        <h1>Search your Gifs!</h1>
+
+        <!-- Movies will get dumped here -->
+        <div id="gif-view"></div>
+
+        <form id="topic-form">
+            <label for="topic-input">Add a Topic</label>
+            <input type="text" id="topic-input">
+            <br>
+
+            <!-- Button triggers new movie to be added -->
+            <input id="add-topic" type="submit" value="Add a topic">
+        </form>
+
+    </div>
+    <div id=gifs></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        // Initial array of movies
+        var topics = ["Cars", "Military", "Space", "Fake News"];
+        ident = {
+            val: 0
+        }
+        obj_arr = []
+
+        // Function for displaying movie data
+        function renderButtons() {
+
+
+            $("#gif-view").empty();
+
+            for (var x = 0; x < topics.length; x++) {
+
+
+                $("#gif-view").append("<button>" + topics[x] + "</button>")
+                $("button:last-child").attr("data-name", topics[x]).addClass("topic_btns")
+
+            }
+
+
+        }
+
+
+        $("#add-topic").on("click", function (event) {
+
+            event.preventDefault();
+
+            var search = $("#topic-input").val().trim();
+            topics.push(search);
+
+            renderButtons();
+        });
+
+
+        renderButtons();
+
+        $("body").on("click", ".topic_btns", function () {
+
+
+
+
+            var topic = $(this).attr("data-name");
+
+
+
+            // Here we construct our URL
+            var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + topic + "&api_key=Ki2DD5TjErAZoUa120YrCTOhR8GBmyxt&limit=10";
+
+
+
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function (response) {
+
+                console.log(response);
+                $("#gifs").empty()
+                for (var count = 0; count < response.data.length; count++) {
+                    var newpic = $("<img>");
+                    var newrating = $("<div>")
+                    newrating.text(response.data[count].rating)
+                    newrating.addClass("rating")
+                    newpic.attr("class", "gif")
+                    newpic.attr("id", ident.val++)
+                    newpic.attr("src", response.data[count].images.fixed_height_small_still.url)
+                    newpic.attr("still", response.data[count].images.fixed_height_small_still.url)
+                    newpic.attr("animate", response.data[count].images.fixed_height_small.url)
+                    newpic.attr("data-state", "still")
+
+                    $("#gifs").append(newpic);
+                    $("#gifs").append(newrating)
+
+
+                    obj_arr.push(response.data[count])
+
+                }
+                console.log(obj_arr)
+
+
+            })
+
+
+
+
+
+        })
+        $(document).on("click", ".gif", function () {
+
+            state = $(this).attr("data-state")
+
+            if (state === "animate") {
+                $(this).attr("src", $(this).attr("still"))
+                $(this).attr("data-state", "still")
+                console.log("ANIMATE")
+            }
+
+            else if (state === "still") {
+                $(this).attr("src", $(this).attr("animate"))
+                $(this).attr("data-state", "animate")
+                console.log("STILL")
+
+            }
+
+
+
+
+
+
+
+
+
+        })
+
+
+    </script>
+</body>
+
+</html>
